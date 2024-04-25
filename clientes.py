@@ -22,11 +22,27 @@ def listar_clientes():
         for cliente in clientes:
             print(f"Nome: {cliente['Nome']}, Email: {cliente['Email']}, Telefone: {cliente['Telefone']}")
 
+def deletar_cliente():
+    listar_clientes()
+    if clientes:
+        try:
+            idx = int(input("Digite o numero do cliente que deseja deletar: "))
+            if 1 <= idx <= len(clientes):
+                del clientes[idx - 1]
+                print("Cliente deletado com sucesso!")
+            else:
+                print("Numero de cliente invalido.")
+        except ValueError:
+            print("Por favor digite um valor valido.")
+    else:
+        print("Não há clientes para deletar.")
+
 def menu():
     print("\n--- Menu ---")
     print("1. Cadastrar cliente")
     print("2. Listar clientes")
-    print("3. Sair")
+    print("3. Deletar cliente")
+    print("4. Sair")
 
 def main():
     while True:
@@ -38,6 +54,8 @@ def main():
         elif opcao == '2':
             listar_clientes()
         elif opcao == '3':
+            deletar_cliente()    
+        elif opcao == '4':
             print("Saindo...")
             break
         else:
