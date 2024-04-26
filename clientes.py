@@ -1,41 +1,75 @@
-clientes = []
+import sqlite3
+import re
 
+# Função para criar a tabela de clientes
+def criar_tabela():
+    conexao = sqlite3.connect("clientes.db")
+    cursor = conexao.cursor()
+
+    cursor.execute('''CREATE TABLE IF NOT EXISTS clientes (
+                        id INTEGER PRIMARY KEY,
+                        nome TEXT,
+                        email TEXT,
+                        telefone TEXT
+                    )''')
+    
+    conexao.commit()
+    conexao.close()
+
+# Função para inserir um cliente no banco de dados
 def cadastrar_cliente():
     nome = input("Digite o nome do cliente: ")
     email = input("Digite o email do cliente: ")
     telefone = input("Digite o telefone do cliente: ")
     
-    cliente = {
-        "Nome": nome,
-        "Email": email,
-        "Telefone": telefone
-    }
+    if not validar_email(email):
+        print("Formato de email inválido.")
+        return
     
-    clientes.append(cliente)
+    conexao = sqlite3.connect("clientes.db")
+    cursor = conexao.cursor()
+    
+    cursor.execute('''INSERT INTO clientes (nome, email, telefone) 
+                      VALUES (?, ?, ?)''', (nome, email, telefone))
+    
+    conexao.commit()
+    conexao.close()
+    
     print("Cliente cadastrado com sucesso!")
 
+# Função para listar todos os clientes cadastrados
 def listar_clientes():
-    if not clientes:
+    conexao = sqlite3.connect("clientes.db")
+    cursor = conexao.cursor()
+    
+    cursor.execute("SELECT * FROM clientes")
+    resultados = cursor.fetchall()
+    
+    if not resultados:
         print("Não há clientes cadastrados.")
     else:
         print("Lista de clientes:")
-        for cliente in clientes:
-            print(f"Nome: {cliente['Nome']}, Email: {cliente['Email']}, Telefone: {cliente['Telefone']}")
+        for cliente in resultados:
+            print(f"ID: {cliente[0]}, Nome: {cliente[1]}, Email: {cliente[2]}, Telefone: {cliente[3]}")
+    
+    conexao.close()
 
+# Função para deletar um cliente do banco de dados
 def deletar_cliente():
     listar_clientes()
-    if clientes:
-        try:
-            idx = int(input("Digite o numero do cliente que deseja deletar: "))
-            if 1 <= idx <= len(clientes):
-                del clientes[idx - 1]
-                print("Cliente deletado com sucesso!")
-            else:
-                print("Numero de cliente invalido.")
-        except ValueError:
-            print("Por favor digite um valor valido.")
-    else:
-        print("Não há clientes para deletar.")
+    conexao = sqlite3.connect("clientes.db")
+    cursor = conexao.cursor()
+
+    id_cliente = input("Digite o ID do cliente que deseja deletar: ")
+    cursor.execute("DELETE FROM clientes WHERE id=?", (id_cliente,))
+    conexao.commit()
+    conexao.close()
+    print("Cliente deletado com sucesso!")
+
+# Função para validar o formato de e-mail
+def validar_email(email):
+    padrao = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    return re.match(padrao, email)
 
 def menu():
     print("\n--- Menu ---")
@@ -45,6 +79,7 @@ def menu():
     print("4. Sair")
 
 def main():
+    criar_tabela()
     while True:
         menu()
         opcao = input("Escolha uma opção: ")
@@ -54,7 +89,7 @@ def main():
         elif opcao == '2':
             listar_clientes()
         elif opcao == '3':
-            deletar_cliente()    
+            deletar_cliente()
         elif opcao == '4':
             print("Saindo...")
             break
